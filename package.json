@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"require('fs').rmSync('dist/avatar.png',{force:true})\"",
     "preview": "vite preview",
     "avatar:b64": "node scripts/avatar-to-b64.mjs"
   },

@@ -1,5 +1,5 @@
 import './resume.css'
-import { resumeData, ICONS } from './data.js'
+import { resumeData, defaultResumeData, ICONS } from './data.js'
 
 function renderContact(items) {
   return items
@@ -34,20 +34,20 @@ function renderDesc(desc) {
       .map((d) => `<li>${d}</li>`)
       .join('')}</ul>`
   }
-  return `<div class="tl-desc">${desc}</div>`
+  return `<div class="tl-desc">${desc || ''}</div>`
 }
 
 function renderTimeline(items) {
-  return items
+  return (items || [])
     .map(
       (t) => `
       <div class="tl-item">
         <div class="tl-dot"></div>
         <div class="tl-content">
-          <div class="tl-date">${t.date}</div>
+          <div class="tl-date">${t.date || ''}</div>
           <div class="tl-head">
-            <span class="tl-sub">${t.sub}</span>
-            <span class="tl-title">${t.title}</span>
+            <span class="tl-sub">${t.sub || ''}</span>
+            <span class="tl-title">${t.title || ''}</span>
           </div>
           ${renderDesc(t.desc)}
         </div>
@@ -57,29 +57,35 @@ function renderTimeline(items) {
 }
 
 function renderProjectList(items) {
-  return items
+  return (items || [])
     .map(
       (p) => `
       <div class="proj">
         <div class="proj-head">
-          <span class="proj-name">${p.name}</span>
-          <span class="proj-tag">${p.tag}</span>
+          <span class="proj-name">${p.name || ''}</span>
+          <span class="proj-tag">${p.tag || ''}</span>
         </div>
-        <div class="proj-desc">${p.desc}</div>
-        <div class="proj-stack">${p.stack
+        <div class="proj-desc">${p.desc || ''}</div>
+        <div class="proj-stack">${(p.stack || '')
           .split(',')
+          .filter(Boolean)
           .map((s) => `<span class="chip">${s.trim()}</span>`)
           .join('')}</div>
       </div>`
     )
-    .join('')
+    .join('')}
+
+let d = resumeData
+let currentTheme = 'dark'
+
+function isAvatarB64() {
+  return String(d.avatar || '').startsWith('data:')
 }
 
-const d = resumeData
-const isAvatarB64 = String(d.avatar || '').startsWith('data:')
-const avatarOffsetToolbar = isAvatarB64
-  ? ''
-  : `
+function renderApp() {
+  const avatarOffsetToolbar = isAvatarB64()
+    ? ''
+    : `
       <div class="avatar-offset">
         <span class="ao-label">头像调节</span>
         <label class="ao-field">X<input type="number" id="offsetX" value="0" step="1" /></label>
@@ -88,20 +94,22 @@ const avatarOffsetToolbar = isAvatarB64
         <button type="button" id="offsetReset" class="ao-reset">默认</button>
         <button type="button" id="saveAvatar" class="ao-reset">另存头像</button>
       </div>`
-const projectsBlock =
-  d.projects && d.projects.length
-    ? `
+  const name = d.name || ''
+  const projectsBlock =
+    d.projects && d.projects.length
+      ? `
       <section class="block">
         <h2 class="block-title block-title--accent">项目经历</h2>
         <div class="projects">${renderProjectList(d.projects)}</div>
       </section>`
-    : ''
+      : ''
 
-document.querySelector('#app').innerHTML = `
+  document.querySelector('#app').innerHTML = `
   <div class="page">
     <div class="toolbar no-print">
       ${avatarOffsetToolbar}
       <div class="toolbar-right">
+        <button type="button" id="dataBtn" class="theme-btn">数据</button>
         <button type="button" id="themeToggle" class="theme-btn">浅色</button>
         <button id="printBtn">打印 / 导出 PDF</button>
       </div>
@@ -111,30 +119,30 @@ document.querySelector('#app').innerHTML = `
       <div class="sheet-inner">
         <aside class="col col-left">
           <div class="avatar" id="avatar">
-            <img src="${d.avatar}" alt="${d.name}" class="avatar-img" id="avatarImg" draggable="false" onerror="this.style.display='none';document.getElementById('avatarFallback').style.display='flex'" />
-            <div class="avatar-fallback" id="avatarFallback" style="display:none">${d.name.charAt(
+            <img src="${d.avatar || ''}" alt="${name}" class="avatar-img" id="avatarImg" draggable="false" onerror="this.style.display='none';document.getElementById('avatarFallback').style.display='flex'" />
+            <div class="avatar-fallback" id="avatarFallback" style="display:none">${name.charAt(
               0
             )}</div>
           </div>
 
           <div class="id-block">
-            <h1 class="name">${d.name}</h1>
-            <p class="position">${d.position}</p>
+            <h1 class="name">${name}</h1>
+            <p class="position">${d.position || ''}</p>
           </div>
 
           <section class="block">
             <h2 class="block-title">基本信息</h2>
-            <div class="contact">${renderContact(d.contact)}</div>
+            <div class="contact">${renderContact(d.contact || [])}</div>
           </section>
 
           <section class="block">
             <h2 class="block-title">专业技能</h2>
-            <div class="skills">${renderSkillList(d.skills)}</div>
+            <div class="skills">${renderSkillList(d.skills || [])}</div>
           </section>
 
           <section class="block">
             <h2 class="block-title">兴趣爱好</h2>
-            <div class="tags">${d.interests
+            <div class="tags">${(d.interests || [])
               .map((i) => `<span class="chip">${i}</span>`)
               .join('')}</div>
           </section>
@@ -151,14 +159,32 @@ document.querySelector('#app').innerHTML = `
             <div class="timeline">${renderTimeline(d.experience)}</div>
           </section>
 
-          ${projectsBlock}
+            ${projectsBlock}
         </main>
       </div>
     </div>
-  </div>
-`
 
-document.getElementById('printBtn').addEventListener('click', () => window.print())
+    <div class="data-modal no-print" id="dataModal" style="display:none">
+      <div class="data-panel">
+        <div class="data-head">
+          <span>简历数据（JSON，可编辑）</span>
+          <button type="button" id="dataClose" class="data-x" aria-label="关闭">×</button>
+        </div>
+        <textarea id="dataEditor" spellcheck="false"></textarea>
+        <div class="data-foot">
+          <span id="dataMsg" class="data-msg"></span>
+          <div class="data-actions">
+            <button type="button" id="dataDefault" class="data-btn">载入默认数据</button>
+            <button type="button" id="dataApply" class="data-btn data-btn--primary">应用</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  `
+  applyTheme(currentTheme)
+  initAvatarOffset()
+}
 
 // ===== Left-column theme toggle (dark / light) =====
 const THEME_KEY = 'leftTheme'
@@ -176,11 +202,9 @@ function applyTheme(theme) {
   }
 }
 
-let currentTheme = 'dark'
 try {
   currentTheme = localStorage.getItem(THEME_KEY) || 'dark'
 } catch (e) {}
-applyTheme(currentTheme)
 
 document.addEventListener('click', (e) => {
   if (e.target.id !== 'themeToggle') return
@@ -245,13 +269,13 @@ function setInputs(x, y, zoom) {
 
 // Defaults depend on avatar format: b64 is pre-cropped (no offset needed); file path needs tuning
 function avatarDefaults() {
-  return isAvatarB64 ? { x: 0, y: 0, zoom: 100 } : { x: 0, y: 40, zoom: 178 }
+  return isAvatarB64() ? { x: 0, y: 0, zoom: 100 } : { x: 0, y: 40, zoom: 178 }
 }
 
-// Restore saved offset on load
-;(() => {
+// (Re)initialize avatar offset after render
+function initAvatarOffset() {
   let offset = avatarDefaults()
-  if (!isAvatarB64) {
+  if (!isAvatarB64()) {
     try {
       const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null')
       if (saved && typeof saved.x === 'number') offset = { ...offset, ...saved }
@@ -262,7 +286,7 @@ function avatarDefaults() {
   const cy = clampOffset(offset.y)
   applyAvatarOffset(cx, cy, offset.zoom)
   setInputs(cx, cy, offset.zoom)
-})()
+}
 
 // Delegate input + click on document ( survives DOM replacement )
 document.addEventListener('input', (e) => {
@@ -321,6 +345,10 @@ function saveAvatarSquare() {
 }
 
 document.addEventListener('click', (e) => {
+  if (e.target.id === 'printBtn') {
+    window.print()
+    return
+  }
   if (e.target.id === 'saveAvatar') {
     saveAvatarSquare()
     return
@@ -333,3 +361,46 @@ document.addEventListener('click', (e) => {
     localStorage.removeItem(STORE_KEY)
   } catch (e) {}
 })
+
+// ===== Data editor modal (view / edit / apply resume JSON) =====
+document.addEventListener('click', (e) => {
+  const id = e.target.id
+  const modal = document.getElementById('dataModal')
+  const editor = document.getElementById('dataEditor')
+  const msg = document.getElementById('dataMsg')
+  if (!modal || !editor) return
+
+  if (id === 'dataBtn') {
+    editor.value = JSON.stringify(d, null, 2)
+    if (msg) msg.textContent = ''
+    modal.style.display = 'flex'
+    return
+  }
+  if (id === 'dataClose' || id === 'dataModal') {
+    modal.style.display = 'none'
+    return
+  }
+  if (id === 'dataDefault') {
+    editor.value = JSON.stringify(defaultResumeData, null, 2)
+    if (msg) msg.textContent = '已载入默认数据，点「应用」生效'
+    return
+  }
+  if (id === 'dataApply') {
+    let parsed
+    try {
+      parsed = JSON.parse(editor.value)
+    } catch (err) {
+      if (msg) msg.textContent = 'JSON 解析失败：' + err.message
+      return
+    }
+    d = parsed
+    try {
+      renderApp()
+      modal.style.display = 'none'
+    } catch (err) {
+      if (msg) msg.textContent = '渲染失败：' + err.message
+    }
+  }
+})
+
+renderApp()

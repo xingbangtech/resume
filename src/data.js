@@ -119,3 +119,50 @@ export const resumeData = {
     }
   ]
 }
+
+// 完整默认数据模板：所有字段的结构参考，可在页面「数据」编辑器中一键载入
+// avatar 支持两种格式：文件地址（'/avatar.png'，放 public/ 目录）或 Base64（npm run avatar:b64 生成）
+export const defaultResumeData = {
+  name: '李星河',
+  position: '前端架构师',
+  avatar: '/avatar.png',
+  contact: [
+    { label: '电话', icon: 'phone', values: ['+86 138 0000 0000'] },
+    { label: '邮箱', icon: 'mail', values: ['xinghe.li@example.com'] },
+    { label: '住址', icon: 'home', values: ['上海市浦东新区世纪大道 100 号'] },
+    { label: 'GitHub', icon: 'github', values: ['github.com/xinghe-li'] },
+    { label: 'LinkedIn', icon: 'link', values: ['linkedin.com/in/xingheli'] }
+  ],
+  skills: [
+    { name: '1.', desc: 'JavaScript / TypeScript' },
+    { name: '2.', desc: 'Vue / React / Vite' },
+    { name: '3.', desc: 'Node.js / 工程化' }
+  ],
+  interests: ['技术写作', '开源社区', '摄影', '健身'],
+  experience: [
+    {
+      date: '2022.06 — 至今',
+      title: '前端架构师',
+      sub: '某互联网科技有限公司 · 基础架构部',
+      desc: [
+        '主导公司前端基础设施升级，搭建基于 Vite + Module Federation 的微前端体系，线上构建耗时下降 60%，首屏性能提升 40%。'
+      ]
+    }
+  ],
+  projects: [
+    {
+      name: '企业级低代码平台',
+      tag: '2022 — 至今',
+      desc: '面向运营人员的可视化搭建平台，支持拖拽编排、Schema 驱动渲染与多端导出；日均页面创建 3000+。',
+      stack: 'Vue3, TypeScript, Vite, Node.js, MongoDB'
+    }
+  ],
+  education: [
+    {
+      date: '2012.09 — 2016.06',
+      title: '计算机科学与技术（本科）',
+      sub: '某大学 · 软件学院',
+      desc: ['主修数据结构、操作系统、计算机网络；获校级奖学金两次。']
+    }
+  ]
+}
