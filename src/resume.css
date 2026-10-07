@@ -611,6 +611,10 @@ body {
     justify-content: center;
   }
 
+  #editBtn {
+    display: none !important;
+  }
+
   .sheet {
     width: 100%;
     min-height: auto;

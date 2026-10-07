@@ -77,6 +77,7 @@ function renderProjectList(items) {
 
 let d = resumeData
 let currentTheme = 'dark'
+const editHistory = []
 
 function isAvatarB64() {
   return String(d.avatar || '').startsWith('data:')
@@ -109,6 +110,7 @@ function renderApp() {
     <div class="toolbar no-print">
       ${avatarOffsetToolbar}
       <div class="toolbar-right">
+        <button type="button" id="editBtn" class="theme-btn">编辑</button>
         <button type="button" id="dataBtn" class="theme-btn">数据</button>
         <button type="button" id="themeToggle" class="theme-btn">浅色</button>
         <button id="printBtn">打印 / 导出 PDF</button>
@@ -353,6 +355,13 @@ document.addEventListener('click', (e) => {
     saveAvatarSquare()
     return
   }
+  if (e.target.id === 'editBtn') {
+    if (editHistory.length) {
+      d = editHistory.pop()
+      renderApp()
+    }
+    return
+  }
   if (e.target.id !== 'offsetReset') return
   const def = avatarDefaults()
   applyAvatarOffset(def.x, def.y, def.zoom)
@@ -393,11 +402,14 @@ document.addEventListener('click', (e) => {
       if (msg) msg.textContent = 'JSON 解析失败：' + err.message
       return
     }
+    const prev = d
     d = parsed
     try {
       renderApp()
+      editHistory.push(prev)
       modal.style.display = 'none'
     } catch (err) {
+      d = prev
       if (msg) msg.textContent = '渲染失败：' + err.message
     }
   }
